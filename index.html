@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>加样解放装置</title>
+  <title>qPCR 终极排板与计算</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -15,30 +15,9 @@
     }
     *, *:before, *:after { box-sizing: inherit; }
     
-    /* 标题栏样式 */
-    .header-container { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 15px 0;}
-    h2 { font-size: 22px; margin: 0; font-weight: 700; }
-    .settings-btn { font-size: 22px; color: #8e8e93; cursor: pointer; padding: 5px; }
-
-    /* 导航卡片样式 */
-    .nav-card {
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      padding: 12px 15px; 
-      text-decoration: none; 
-      background-color: #ffffff; 
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    .nav-icon {
-      width: 32px; height: 32px; 
-      background-color: #e5e5ea; 
-      border-radius: 8px; 
-      display: flex; align-items: center; justify-content: center;
-      margin-right: 12px;
-    }
+    .header-container { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 20px 0;}
+    h2 { font-size: 20px; margin: 0; }
+    .settings-btn { font-size: 18px; color: #8e8e93; cursor: pointer; }
 
     .card {
       background: #ffffff;
@@ -62,10 +41,12 @@
       border: 1px solid #c7c7cc;
       border-radius: 8px;
       outline: none;
+      -webkit-appearance: none;
       background-color: #fafafa;
     }
     input[type="number"]:focus, select:focus { border-color: #007aff; background-color: #ffffff; }
 
+    /* 隐藏的设置面板样式 */
     #settings-panel {
       display: none;
       background-color: #e5e5ea;
@@ -73,18 +54,40 @@
       border-radius: 10px;
       margin-bottom: 15px;
     }
+    .settings-title { font-size: 13px; font-weight: 600; color: #1c1c1e; margin-bottom: 8px; }
     .settings-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
     .settings-grid div { display: flex; flex-direction: column; }
     .settings-grid label { font-size: 11px; color: #8e8e93; margin-bottom: 2px;}
+    .settings-grid input { padding: 6px; font-size: 13px; }
+
+    .max-reps-hint { font-size: 12px; color: #34c759; margin-top: 5px; font-weight: 600; text-align: right;}
+    .warning-msg { color: #ff3b30; font-size: 12px; text-align: center; display: none; margin-top: 10px; font-weight: 600; }
+    .zoom-hint { text-align: center; font-size: 11px; color: #007aff; margin-bottom: 5px; text-decoration: underline; margin-top: 10px;}
+    
+    .plate-wrapper { width: 100%; transition: transform 0.3s ease; transform-origin: top left; margin-top: 10px; }
+    .plate-wrapper.zoomed { transform: scale(1.8); }
 
     .plate-grid { display: grid; grid-template-columns: 20px repeat(12, 1fr); grid-template-rows: 20px repeat(8, 1fr); gap: 2px; max-width: 400px; margin: 0 auto; }
     .grid-label { font-size: 10px; color: #8e8e93; text-align: center; line-height: 20px; font-weight: bold;}
+    .col-label { grid-row: 1; }
+    .row-label { grid-column: 1; display: flex; align-items: center; justify-content: center;}
+    
     .well { width: 100%; padding-bottom: 100%; border-radius: 50%; border: 1px solid #e0e0e0; background-color: #fafafa; position: relative; }
-    .well-content { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #333; text-align: center; line-height: 1; }
+    .well-content { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #fafafa; text-align: center; line-height: 1; }
 
+    .ref-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; border-bottom: 1px solid #e5e5ea; }
+    .ref-row:last-child { border-bottom: none; }
+    .ref-value { color: #ff9500; font-weight: 600; font-family: monospace; }
+    
     .result-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 15px; border-bottom: 1px solid #e5e5ea; }
     .result-row:last-child { border-bottom: none; font-weight: 600; color: #ff3b30; margin-top: 3px; padding-top: 10px;}
-    .easter-egg { text-align: center; font-size: 12px; font-weight: bold; color: rgba(0,0,0,0.04); margin-top: 35px; letter-spacing: 2px; }
+    .vol-value { font-family: monospace; }
+    
+    .condition-label { font-size: 12px; font-weight: 600; margin-top: 10px; padding-bottom: 2px;}
+    .condition-none { color: #34c759; } 
+    .condition-rox { color: #ff9500; }  
+    
+    .easter-egg { text-align: center; font-size: 12px; font-weight: bold; color: rgba(0,0,0,0.04); margin-top: 35px; margin-bottom: 10px; letter-spacing: 2px; pointer-events: none;}
   </style>
 </head>
 <body>
@@ -94,72 +97,107 @@
     <div class="settings-btn" onclick="toggleSettings()">⚙️</div>
   </div>
 
-  <a href="rt.html" class="nav-card">
-    <div style="display: flex; align-items: center;">
-      <div class="nav-icon">
-        <span style="font-size: 13px; font-weight: bold; color: #8e8e93; font-family: monospace;">RT</span>
-      </div>
-      <span style="font-size: 14px; font-weight: 600; color: #1c1c1e;">RT 逆转录浓度配平助手</span>
-    </div>
-    <span style="color: #c7c7cc; font-size: 16px; font-weight: bold;">></span>
-  </a>
-
   <div id="settings-panel">
     <div class="settings-title">自定义单孔体积配方 (μL)</div>
     <div class="settings-grid">
-      <div><label>SYBR Mix</label><input type="number" id="cfg-sybr" value="5.2" oninput="updateConfig()"></div>
-      <div><label>ROX Dye</label><input type="number" id="cfg-rox" value="0.2" oninput="updateConfig()"></div>
-      <div><label>cDNA</label><input type="number" id="cfg-cdna" value="1.0" oninput="updateConfig()"></div>
-      <div><label>Primers F</label><input type="number" id="cfg-f" value="0.8" oninput="updateConfig()"></div>
-      <div><label>Primers R</label><input type="number" id="cfg-r" value="0.8" oninput="updateConfig()"></div>
-      <div><label>ddH2O</label><input type="number" id="cfg-w" value="2.2" oninput="updateConfig()"></div>
+      <div><label>SYBR Mix</label><input type="number" id="cfg-sybr" value="5.2" step="0.1" oninput="updateConfig()"></div>
+      <div><label>ROX Dye</label><input type="number" id="cfg-rox" value="0.2" step="0.1" oninput="updateConfig()"></div>
+      <div><label>cDNA</label><input type="number" id="cfg-cdna" value="1.0" step="0.1" oninput="updateConfig()"></div>
+      <div><label>正向引物 (F)</label><input type="number" id="cfg-f" value="0.8" step="0.1" oninput="updateConfig()"></div>
+      <div><label>反向引物 (R)</label><input type="number" id="cfg-r" value="0.8" step="0.1" oninput="updateConfig()"></div>
+      <div><label>ddH2O</label><input type="number" id="cfg-w" value="2.2" step="0.1" oninput="updateConfig()"></div>
     </div>
   </div>
 
   <div class="card">
     <div class="card-title-step">第一步：输入参数与排板</div>
-    <select id="layout-mode" onchange="updateAll()" style="margin-bottom: 10px;">
-      <option value="matrix">矩阵对齐 (推荐)</option>
-      <option value="stack">顺延堆叠</option>
-    </select>
-    <div class="input-group">
-      <div><span class="input-label">样品数 (S)</span><input type="number" id="sample-input" oninput="updateAll()"></div>
-      <div><span class="input-label">基因数 (G)</span><input type="number" id="gene-input" oninput="updateAll()"></div>
-      <div><span class="input-label">复孔数</span><input type="number" id="reps-input" value="3" oninput="updateAll()"></div>
+    <div class="input-group" style="margin-bottom: 10px;">
+      <div style="flex: 100%;">
+        <select id="layout-mode" onchange="updateAll()">
+          <option value="matrix">矩阵对齐 (推荐：按行加引物，按列加样品)</option>
+          <option value="stack">顺延堆叠 (兜底：适合超多基因或样品)</option>
+        </select>
+      </div>
     </div>
-    <div class="plate-grid" id="plate-grid" style="margin-top: 15px;"></div>
+    <div class="input-group">
+      <div><span class="input-label">样品数 (S)</span><input type="number" id="sample-input" inputmode="numeric" placeholder="如: 2" oninput="updateAll()"></div>
+      <div><span class="input-label">基因数 (G)</span><input type="number" id="gene-input" inputmode="numeric" placeholder="如: 7" oninput="updateAll()"></div>
+      <div><span class="input-label">复孔数</span><input type="number" id="reps-input" inputmode="numeric" value="3" placeholder="默认 3" oninput="updateAll()"></div>
+    </div>
+    <div class="max-reps-hint" id="max-reps-hint">当前模式最大支持复孔数: -</div>
+    <div class="warning-msg" id="plate-warning">⚠️ 96 孔板已满！无法排下当前设计。</div>
+    <div class="zoom-hint" onclick="toggleZoom()">点击圆圈区域切换缩放</div>
+    <div class="plate-wrapper" id="plate-wrapper">
+      <div class="plate-grid" id="plate-grid" onclick="toggleZoom()"></div>
+    </div>
   </div>
 
   <div class="card">
-    <div class="card-title">第二步：体积计算器</div>
+    <div class="card-title-step">第二步：获取精准参考孔数</div>
+    <div class="hint">公式：真实需求孔数 + 3 孔操作冗余</div>
+    <div class="ref-row"><span>m 值 (单样品所需总孔数)</span> <span class="ref-value" id="m-ref">-</span></div>
+    <div class="ref-row"><span>n 值 (单基因所需总孔数)</span> <span class="ref-value" id="n-ref">-</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">第三步：体积计算器</div>
     <div class="input-group">
-      <div><span class="input-label">最终 m 孔 (EP1)</span><input type="number" id="m-input" oninput="calcVols()"></div>
-      <div><span class="input-label">最终 n 孔 (EP2)</span><input type="number" id="n-input" oninput="calcVols()"></div>
+      <div><span class="input-label">最终 m 孔数 (EP1)</span><input type="number" id="m-input" inputmode="numeric" placeholder="输入 m 值..." oninput="calcVols()"></div>
+      <div><span class="input-label">最终 n 孔数 (EP2)</span><input type="number" id="n-input" inputmode="numeric" placeholder="输入 n 值..." oninput="calcVols()"></div>
     </div>
-    <div style="margin-top: 15px;">
+
+    <div style="margin-top: 10px;">
       <div class="card-title" id="title-ep1" style="font-size: 14px; color: #1c1c1e;">样品预混 EP 管</div>
-      <div class="result-row"><span>cDNA 模板 (<span id="lbl-cdna">1.0</span> μL)</span> <span id="cdna-res">0.0 μL</span></div>
-      <div class="result-row"><span>SYBR Mix (<span id="lbl-sybr-full">5.2</span> μL)</span> <span id="sybr-res">0.0 μL</span></div>
-      <div class="result-row"><span>总体积 (此管)</span> <span id="total1-res">0.0 μL</span></div>
+      
+      <div class="result-row"><span>cDNA 模板 (<span id="lbl-cdna">1.0</span> μL)</span> <span class="vol-value" id="cdna-res">0.0 μL</span></div>
+      
+      <div class="condition-label condition-none">▶ 无需 ROX 校正：</div>
+      <div class="result-row"><span>SYBR Mix (<span id="lbl-sybr-full">5.2</span> μL)</span> <span class="vol-value" id="sybr-res">0.0 μL</span></div>
+      
+      <div class="condition-label condition-rox">▶ 需要 ROX 校正：</div>
+      <div class="result-row"><span>SYBR Mix (<span id="lbl-sybr-part">5.0</span> μL)</span> <span class="vol-value" id="sybr-rox-res">0.0 μL</span></div>
+      <div class="result-row"><span>ROX Dye (<span id="lbl-rox">0.2</span> μL)</span> <span class="vol-value" id="rox-res">0.0 μL</span></div>
+      
+      <div style="border-top: 1px dashed #e5e5ea; margin-top: 8px;"></div>
+      <div class="result-row"><span>总体积 (此管)</span> <span class="vol-value" id="total1-res">0.0 μL</span></div>
     </div>
+
     <div style="margin-top: 20px;">
       <div class="card-title" id="title-ep2" style="font-size: 14px; color: #1c1c1e;">引物预混 EP 管</div>
-      <div class="result-row"><span>引物 F+R (<span id="lbl-fr">1.6</span> μL)</span> <span id="primers-res">0.0 μL</span></div>
-      <div class="result-row"><span>ddH2O (<span id="lbl-w">2.2</span> μL)</span> <span id="water-res">0.0 μL</span></div>
-      <div class="result-row"><span>总体积 (此管)</span> <span id="total2-res">0.0 μL</span></div>
+      <div class="hint">提示：默认使用 10 μM 浓度引物</div>
+      <div class="result-row"><span>正向引物 F (<span id="lbl-f">0.8</span> μL)</span> <span class="vol-value" id="f-res">0.0 μL</span></div>
+      <div class="result-row"><span>反向引物 R (<span id="lbl-r">0.8</span> μL)</span> <span class="vol-value" id="r-res">0.0 μL</span></div>
+      <div class="result-row"><span>ddH2O (<span id="lbl-w">2.2</span> μL)</span> <span class="vol-value" id="water-res">0.0 μL</span></div>
+      
+      <div style="border-top: 1px dashed #e5e5ea; margin-top: 8px;"></div>
+      <div class="result-row"><span>总体积 (此管)</span> <span class="vol-value" id="total2-res">0.0 μL</span></div>
     </div>
   </div>
 
   <div class="easter-egg">@louie</div>
 
   <script>
+    const sampleColors = [
+      'rgba(0, 122, 255, 0.15)', 'rgba(255, 149, 0, 0.15)', 'rgba(52, 199, 89, 0.15)',  
+      'rgba(255, 59, 48, 0.15)', 'rgba(175, 82, 222, 0.15)', 'rgba(255, 214, 10, 0.15)', 
+      'rgba(90, 200, 250, 0.15)', 'rgba(88, 86, 214, 0.15)' 
+    ];
+
+    // 全局配置对象
     let cfg = { sybr: 5.2, rox: 0.2, cdna: 1.0, f: 0.8, r: 0.8, w: 2.2 };
-    const sampleColors = ['rgba(0,122,255,0.15)', 'rgba(255,149,0,0.15)', 'rgba(52,199,89,0.15)', 'rgba(255,59,48,0.15)', 'rgba(175,82,222,0.15)', 'rgba(255,214,10,0.15)'];
 
-    document.addEventListener('DOMContentLoaded', () => { generateEmptyPlate(); updateLabels(); updateTitles(); });
+    document.addEventListener('DOMContentLoaded', () => {
+      generateEmptyPlate();
+      updateLabels();
+      updateTitles(); // 初始化管数标题
+    });
 
-    function toggleSettings() { const p = document.getElementById('settings-panel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; }
-    
+    function toggleSettings() {
+      const panel = document.getElementById('settings-panel');
+      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // 更新配置并重新计算
     function updateConfig() {
       cfg.sybr = parseFloat(document.getElementById('cfg-sybr').value) || 0;
       cfg.rox = parseFloat(document.getElementById('cfg-rox').value) || 0;
@@ -167,32 +205,64 @@
       cfg.f = parseFloat(document.getElementById('cfg-f').value) || 0;
       cfg.r = parseFloat(document.getElementById('cfg-r').value) || 0;
       cfg.w = parseFloat(document.getElementById('cfg-w').value) || 0;
-      updateLabels(); calcVols();
+      
+      updateLabels();
+      calcVols();
     }
 
+    // 动态更新页面上的配方文字
     function updateLabels() {
       document.getElementById('lbl-cdna').innerText = cfg.cdna.toFixed(1);
       document.getElementById('lbl-sybr-full').innerText = cfg.sybr.toFixed(1);
-      document.getElementById('lbl-fr').innerText = (cfg.f + cfg.r).toFixed(1);
+      document.getElementById('lbl-sybr-part').innerText = (cfg.sybr - cfg.rox).toFixed(1);
+      document.getElementById('lbl-rox').innerText = cfg.rox.toFixed(1);
+      document.getElementById('lbl-f').innerText = cfg.f.toFixed(1);
+      document.getElementById('lbl-r').innerText = cfg.r.toFixed(1);
       document.getElementById('lbl-w').innerText = cfg.w.toFixed(1);
     }
 
+    // 动态更新 EP 管数量标题
     function updateTitles() {
       const s = parseInt(document.getElementById('sample-input').value) || 0;
       const g = parseInt(document.getElementById('gene-input').value) || 0;
+      
       document.getElementById('title-ep1').innerText = s > 0 ? `样品预混 EP 管，共 ${s} 管` : `样品预混 EP 管`;
       document.getElementById('title-ep2').innerText = g > 0 ? `引物预混 EP 管，共 ${g} 管` : `引物预混 EP 管`;
     }
 
-    function updateAll() { generatePlateMap(); updateTitles(); }
+    function updateAll() {
+      generatePlateMap();
+      calcMNReference();
+      updateTitles(); // 联动更新标题
+    }
+
+    function getRowsPerSample(g, reps) {
+      if (reps > 12) return 99; 
+      let rows = 0; let currentCols = 0;
+      for (let i = 0; i < g; i++) {
+        if (currentCols + reps > 12) { rows++; currentCols = 0; }
+        currentCols += reps;
+      }
+      return rows + 1; 
+    }
 
     function generateEmptyPlate() {
-      const grid = document.getElementById('plate-grid'); grid.innerHTML = '';
-      for (let c = 0; c <= 12; c++) { const l = document.createElement('div'); l.className = 'grid-label'; l.innerText = c || ''; grid.appendChild(l); }
-      const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+      const grid = document.getElementById('plate-grid');
+      grid.innerHTML = ''; 
+      for (let c = 0; c <= 12; c++) {
+        const label = document.createElement('div'); label.className = 'grid-label col-label';
+        if (c > 0) label.innerText = c;
+        grid.appendChild(label);
+      }
+      const rowLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
       for (let r = 0; r < 8; r++) {
-        const rl = document.createElement('div'); rl.className = 'grid-label'; rl.innerText = rows[r]; grid.appendChild(rl);
-        for (let c = 0; c < 12; c++) { const w = document.createElement('div'); w.className = 'well'; w.innerHTML = '<div class="well-content"></div>'; grid.appendChild(w); }
+        const label = document.createElement('div'); label.className = 'grid-label row-label'; label.innerText = rowLetters[r];
+        grid.appendChild(label);
+        for (let c = 1; c <= 12; c++) {
+          const well = document.createElement('div'); well.className = 'well';
+          const content = document.createElement('div'); content.className = 'well-content';
+          well.appendChild(content); grid.appendChild(well);
+        }
       }
     }
 
@@ -203,36 +273,96 @@
       const reps = parseInt(document.getElementById('reps-input').value) || 0;
       const wells = document.querySelectorAll('.well');
       const hints = document.querySelectorAll('.well-content');
-      wells.forEach(w => w.style.backgroundColor = '#fafafa');
-      hints.forEach(h => h.innerText = '');
+      const warning = document.getElementById('plate-warning');
+      const maxHint = document.getElementById('max-reps-hint');
 
-      if (s <= 0 || g <= 0 || reps <= 0) return;
+      wells.forEach(w => { w.style.backgroundColor = '#fafafa'; w.style.borderColor = '#e0e0e0'; });
+      hints.forEach(h => h.innerHTML = '');
 
-      if (mode === 'matrix' && s * reps <= 12 && g <= 8) {
-        for (let si = 0; si < s; si++) {
-          for (let gi = 0; gi < g; gi++) {
+      if (s <= 0 || g <= 0 || reps <= 0) {
+        warning.style.display = 'none'; maxHint.innerText = `当前模式最大支持复孔数: -`; return;
+      }
+
+      if (mode === 'matrix') {
+        let maxReps = Math.floor(12 / s); 
+        if (g > 8) maxReps = 0; 
+        
+        if (maxReps > 0) maxHint.innerText = `当前模式最大支持复孔数: ${maxReps}`;
+        else maxHint.innerText = `当前模式无法排下 (要求：基因≤8 且 样品×复孔≤12)`;
+
+        if (s * reps > 12 || g > 8) {
+          warning.innerText = '⚠️ 超出矩阵模式极限！请减少数量或切换为"顺延堆叠"模式。'; warning.style.display = 'block'; return;
+        } else { warning.style.display = 'none'; }
+
+        for (let sampleIdx = 0; sampleIdx < s; sampleIdx++) {
+          for (let geneIdx = 0; geneIdx < g; geneIdx++) {
             for (let r = 0; r < reps; r++) {
-              let idx = gi * 12 + (si * reps + r);
-              if (idx < 96) {
-                wells[idx].style.backgroundColor = sampleColors[si % 6];
-                hints[idx].innerText = `S${si+1}G${gi+1}`;
-              }
+              let row = geneIdx; let col = sampleIdx * reps + r; let wellIndex = row * 12 + col;
+              wells[wellIndex].style.backgroundColor = sampleColors[sampleIdx % sampleColors.length];
+              wells[wellIndex].style.borderColor = sampleColors[sampleIdx % sampleColors.length].replace('0.15', '0.5');
+              hints[wellIndex].innerHTML = `S${sampleIdx+1}<br>G${geneIdx+1}`;
+              hints[wellIndex].style.color = `rgba(0,0,0, ${0.2 + (geneIdx % 2) * 0.25})`;
             }
+          }
+        }
+      } else {
+        let maxReps = 0;
+        for (let rTest = 1; rTest <= 12; rTest++) {
+          if (getRowsPerSample(g, rTest) * s <= 8) maxReps = rTest; else break;
+        }
+        if (maxReps > 0) maxHint.innerText = `当前模式最大支持复孔数: ${maxReps}`;
+        else maxHint.innerText = `当前设计已超出单板极限`;
+
+        const rowsPerSample = getRowsPerSample(g, reps);
+        if (rowsPerSample * s > 8 || reps > 12) {
+          warning.innerText = '⚠️ 96 孔板已满！无法排下当前设计。'; warning.style.display = 'block'; return;
+        } else { warning.style.display = 'none'; }
+
+        for (let sampleIdx = 0; sampleIdx < s; sampleIdx++) {
+          let baseRow = sampleIdx * rowsPerSample; let currentRowOffset = 0; let currentCol = 0;
+          for (let geneIdx = 0; geneIdx < g; geneIdx++) {
+            if (currentCol + reps > 12) { currentRowOffset++; currentCol = 0; }
+            for (let i = 0; i < reps; i++) {
+              let absRow = baseRow + currentRowOffset; let absCol = currentCol + i; let wellIndex = absRow * 12 + absCol;
+              wells[wellIndex].style.backgroundColor = sampleColors[sampleIdx % sampleColors.length];
+              wells[wellIndex].style.borderColor = sampleColors[sampleIdx % sampleColors.length].replace('0.15', '0.5');
+              hints[wellIndex].innerHTML = `S${sampleIdx+1}<br>G${geneIdx+1}`;
+              hints[wellIndex].style.color = `rgba(0,0,0, ${0.2 + (geneIdx % 2) * 0.25})`;
+            }
+            currentCol += reps;
           }
         }
       }
     }
 
+    function toggleZoom() { document.getElementById('plate-wrapper').classList.toggle('zoomed'); }
+
+    function calcMNReference() {
+      let s = parseFloat(document.getElementById('sample-input').value); let g = parseFloat(document.getElementById('gene-input').value); let reps = parseFloat(document.getElementById('reps-input').value);
+      if (s > 0 && g > 0 && reps > 0) {
+        document.getElementById('m-ref').innerText = (g * reps) + 3; document.getElementById('n-ref').innerText = (s * reps) + 3; 
+      } else { document.getElementById('m-ref').innerText = '-'; document.getElementById('n-ref').innerText = '-'; }
+    }
+
+    // 动态体积计算 (使用 cfg 变量)
     function calcVols() {
-      const m = parseFloat(document.getElementById('m-input').value) || 0;
-      const n = parseFloat(document.getElementById('n-input').value) || 0;
+      let m = parseFloat(document.getElementById('m-input').value) || 0;
+      let n = parseFloat(document.getElementById('n-input').value) || 0;
+      
+      // EP1
       document.getElementById('cdna-res').innerText = (m * cfg.cdna).toFixed(1) + ' μL';
       document.getElementById('sybr-res').innerText = (m * cfg.sybr).toFixed(1) + ' μL';
-      document.getElementById('total1-res').innerText = (m * (cfg.cdna + cfg.sybr)).toFixed(1) + ' μL';
-      document.getElementById('primers-res').innerText = (n * (cfg.f + cfg.r)).toFixed(1) + ' μL';
+      document.getElementById('sybr-rox-res').innerText = (m * (cfg.sybr - cfg.rox)).toFixed(1) + ' μL';
+      document.getElementById('rox-res').innerText = (m * cfg.rox).toFixed(1) + ' μL';
+      document.getElementById('total1-res').innerText = (m * (cfg.sybr + cfg.cdna)).toFixed(1) + ' μL';
+
+      // EP2
+      document.getElementById('f-res').innerText = (n * cfg.f).toFixed(1) + ' μL';
+      document.getElementById('r-res').innerText = (n * cfg.r).toFixed(1) + ' μL';
       document.getElementById('water-res').innerText = (n * cfg.w).toFixed(1) + ' μL';
       document.getElementById('total2-res').innerText = (n * (cfg.f + cfg.r + cfg.w)).toFixed(1) + ' μL';
     }
   </script>
 </body>
 </html>
+<a href="rt.html" class="btn" style="background:#007aff;"><- 去逆转录计算 </a>
