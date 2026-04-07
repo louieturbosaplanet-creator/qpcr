@@ -1,149 +1,144 @@
-<a href="index.html" class="btn" style="background:#007aff;"><- 回 qPCR 计算</a>
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title> takara 制裁装置 </title>
+  <title>takara 制裁装置</title>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f2f2f7; margin: 0; padding: 15px; color: #1c1c1e; box-sizing: border-box;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f2f2f7; margin: 0; padding: 15px; color: #1c1c1e; box-sizing: border-box; }
     *, *:before, *:after { box-sizing: inherit; }
-    h2 { text-align: center; font-size: 20px; margin: 10px 0 20px 0; }
+    h2 { text-align: center; font-size: 20px; margin: 10px 0 15px 0; }
     
+    .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .btn-back { display: inline-block; padding: 8px 15px; background-color: #007aff; color: white; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; }
+
+    /* 模式切换页签样式 */
+    .tab-container { display: flex; background: #e5e5ea; border-radius: 10px; padding: 2px; margin-bottom: 15px; }
+    .tab-item { flex: 1; text-align: center; padding: 8px 0; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; color: #8e8e93; transition: all 0.2s; }
+    .tab-item.active { background: #ffffff; color: #1c1c1e; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
     .card { background: #ffffff; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .card-title-step { font-weight: 600; font-size: 16px; margin-bottom: 10px; color: #ff9500; }
     .hint { font-size: 12px; color: #8e8e93; margin-bottom: 12px; line-height: 1.3; }
 
-    .instruction-bar {
-      background-color: #f0f7ff; border-left: 5px solid #007aff;
-      padding: 12px; margin: 15px 0; border-radius: 4px;
-      font-size: 15px; font-weight: bold; color: #1c1c1e; line-height: 1.5;
-    }
-    .instruction-highlight { color: #ff3b30; font-size: 20px; margin: 0 4px; font-family: monospace;}
+    .instruction-bar { background-color: #f0f7ff; border-left: 5px solid #007aff; padding: 12px; margin: 15px 0; border-radius: 4px; font-size: 14px; font-weight: bold; }
+    .instruction-highlight { color: #ff3b30; font-size: 18px; margin: 0 4px; font-family: monospace; }
 
     .input-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
-    .input-field { display: flex; flex-direction: column; }
-    .input-label { font-size: 11px; color: #8e8e93; margin-bottom: 4px; font-weight: 600;}
-    input {
-      width: 100%; padding: 10px; font-size: 15px; border: 1px solid #c7c7cc; border-radius: 8px; outline: none; background-color: #fafafa;
-    }
-    input:focus { border-color: #007aff; background-color: #ffffff; }
+    .input-label { font-size: 11px; color: #8e8e93; margin-bottom: 4px; font-weight: 600; }
+    input { width: 100%; padding: 10px; font-size: 14px; border: 1px solid #c7c7cc; border-radius: 8px; outline: none; background-color: #fafafa; }
 
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-    th { text-align: left; color: #8e8e93; font-weight: 500; padding: 8px 4px; border-bottom: 1px solid #e5e5ea; }
+    th { text-align: left; color: #8e8e93; padding: 8px 4px; border-bottom: 1px solid #e5e5ea; }
     td { padding: 10px 4px; border-bottom: 1px solid #f2f2f7; }
-    .col-rna { font-weight: 600; color: #007aff; }
-    .col-water { font-weight: 600; color: #34c759; }
+    .mix-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #f2f2f7; font-size: 14px; }
+    .no-num { color: #8e8e93; margin-right: 5px; font-weight: bold; }
 
-    .mix-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f2f2f7; font-size: 14px; }
-    .no-num { color: #8e8e93; margin-right: 4px; font-weight: bold; font-family: monospace;}
-    .total-vol { font-weight: bold; color: #007aff; font-family: monospace; }
+    .btn-action { display: inline-block; padding: 10px 18px; background-color: #007aff; color: white; border-radius: 8px; font-size: 14px; font-weight: 600; border: none; margin-top: 10px; }
+    .row-error { background-color: rgba(255, 59, 48, 0.05); color: #ff3b30; }
 
-    .row-error { background-color: rgba(255, 59, 48, 0.05); }
-    .row-error td { color: #ff3b30 !important; }
-
-    .btn {
-      display: inline-block; padding: 10px 18px; background-color: #007aff; color: white; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; text-align: center; margin-top: 10px; border: none;
-    }
-    .btn-secondary { background-color: #e5e5ea; color: #1c1c1e; margin-left: 8px; }
-
-    .easter-egg { text-align: center; font-size: 12px; font-weight: bold; color: rgba(0,0,0,0.04); margin: 40px 0 20px 0; letter-spacing: 2px; }
+    .mode-content { display: none; }
+    .mode-content.active { display: block; }
+    .easter-egg { text-align: center; font-size: 12px; font-weight: bold; color: rgba(0,0,0,0.04); margin-top: 30px; letter-spacing: 2px; }
   </style>
 </head>
 <body>
 
-  <h2>RT 逆转录：n倍体系(浓度对齐版)</h2>
+  <div class="nav-header">
+    <a href="index.html" class="btn-back">← 回 qPCR 计算</a>
+    <span style="font-size: 12px; color: #8e8e93;">Takara 终极制裁版</span>
+  </div>
+
+  <div class="tab-container">
+    <div class="tab-item active" onclick="switchMode('premix')">大管预混模式</div>
+    <div class="tab-item" onclick="switchMode('single')">逐孔点样模式</div>
+  </div>
 
   <div class="card">
-    <div class="card-title-step">Step 0: 核心参数</div>
+    <div class="card-title-step" style="color: #1c1c1e;">Step 0: 核心参数</div>
     <div class="input-grid">
-      <div class="input-field">
-        <span class="input-label">样本数 (m)</span>
-        <input type="number" id="m-count" value="3" oninput="calculateAll()" inputmode="numeric">
-      </div>
-      <div class="input-field">
-        <span class="input-label">体系倍数 (n)</span>
-        <input type="number" id="n-scale" value="2" step="0.5" oninput="calculateAll()" inputmode="decimal">
-      </div>
-      <div class="input-field">
-        <span class="input-label">1倍量质量(ng)</span>
-        <input type="number" id="target-mass" value="1000" oninput="calculateAll()" inputmode="numeric">
-      </div>
+      <div><span class="input-label">样本数 (m)</span><input type="number" id="m-count" value="3" oninput="calculateAll()"></div>
+      <div><span class="input-label">体系倍数 (n)</span><input type="number" id="n-scale" value="2" step="0.5" oninput="calculateAll()"></div>
+      <div><span class="input-label">1倍量(ng)</span><input type="number" id="target-mass" value="1000" oninput="calculateAll()"></div>
     </div>
-    <div class="hint">当前总 RNA 投入量：<span id="actual-total-mass" style="color:#007aff; font-weight:bold;">2000</span> ng</div>
+    <div class="hint">总 RNA 投入：<span id="total-rna-text" style="color:#007aff; font-weight:bold;">2000</span> ng</div>
   </div>
 
   <div class="card">
     <div class="card-title-step">第一阶段：gDNA 去除 (Step 1)</div>
     
-    <div style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">1. 配置 Mix A (预混液)</div>
-    <div class="mix-item"><span><span class="no-num">①</span> gDNA Eraser (酶)</span> <span class="total-vol" id="mix-a-1">- μL</span></div>
-    <div class="mix-item"><span><span class="no-num">②</span> 5X gDNA Eraser Buffer</span> <span class="total-vol" id="mix-a-2">- μL</span></div>
-    
-    <div class="instruction-bar">
-      👉 请在每个样品管中加入：<span class="instruction-highlight" id="instr-a">-</span> μL Mix A
+    <div id="premix-step1" class="mode-content active">
+      <div class="hint">配制 Mix A (含 m+1 冗余)：</div>
+      <div class="mix-item"><span><span class="no-num">①</span> gDNA Eraser (酶)</span> <span id="mix-a-1-vol" style="font-weight:bold;">- μL</span></div>
+      <div class="mix-item"><span><span class="no-num">②</span> 5X Buffer</span> <span id="mix-a-2-vol" style="font-weight:bold;">- μL</span></div>
+      <div class="instruction-bar">👉 每管加入：<span class="instruction-highlight" id="instr-a-mix">-</span> μL Mix A</div>
     </div>
 
-    <div style="font-size: 13px; font-weight: 600; margin-top: 15px;">2. 样本配平清单 (单位: μL)</div>
+    <div id="single-step1" class="mode-content">
+      <div class="hint">直接在样本管依次加入：</div>
+      <div class="mix-item"><span><span class="no-num">①</span> gDNA Eraser (酶)</span> <span id="s-a-1-vol" class="instruction-highlight">-</span></div>
+      <div class="mix-item"><span><span class="no-num">②</span> 5X Buffer</span> <span id="s-a-2-vol" class="instruction-highlight">-</span></div>
+    </div>
+
+    <div style="font-size: 13px; font-weight: 600; margin-top: 15px;">样本配平表 (μL)</div>
     <table id="sample-table">
-      <thead>
-        <tr>
-          <th>样本</th>
-          <th>浓度</th>
-          <th class="col-rna">RNA</th>
-          <th class="col-water">补水</th>
-        </tr>
-      </thead>
+      <thead><tr><th>样本</th><th>浓度</th><th>RNA</th><th>补水</th></tr></thead>
       <tbody id="table-body"></tbody>
     </table>
-    <div class="btn" onclick="addRow()">+ 样本</div>
-    <div class="btn btn-secondary" onclick="resetData()">重置</div>
+    <button class="btn-action" onclick="addRow()">+ 添加样本</button>
   </div>
 
   <div class="card">
-    <div class="card-title-step">第二阶段：逆转录 (Step 2)</div>
+    <div class="card-title-step">第二阶段：逆转录反应 (Step 2)</div>
     
-    <div style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">1. 配置 Mix B (预混液)</div>
-    <div class="mix-item"><span><span class="no-num">③</span> PrimeScript RT Enzyme Mix I</span> <span class="total-vol" id="mix-b-3">- μL</span></div>
-    <div class="mix-item"><span><span class="no-num">④</span> 5X PrimeScript Buffer 2</span> <span class="total-vol" id="mix-b-4">- μL</span></div>
-    <div class="mix-item"><span><span class="no-num">⑤</span> RT Primer Mix</span> <span class="total-vol" id="mix-b-5">- μL</span></div>
-    <div class="mix-item"><span><span class="no-num">⑥</span> RNase Free dH2O</span> <span class="total-vol" id="mix-b-6">- μL</span></div>
-    
-    <div class="instruction-bar">
-      👉 请在上述 Step 1 管中加入：<span class="instruction-highlight" id="instr-b">-</span> μL Mix B
+    <div id="premix-step2" class="mode-content active">
+      <div class="hint">配制 Mix B (含 m+1 冗余)：</div>
+      <div class="mix-item"><span><span class="no-num">③</span> RT Enzyme Mix I</span> <span id="mix-b-3-vol" style="font-weight:bold;">- μL</span></div>
+      <div class="mix-item"><span><span class="no-num">④</span> 5X Buffer 2</span> <span id="mix-b-4-vol" style="font-weight:bold;">- μL</span></div>
+      <div class="mix-item"><span><span class="no-num">⑤</span> RT Primer Mix</span> <span id="mix-b-5-vol" style="font-weight:bold;">- μL</span></div>
+      <div class="mix-item"><span><span class="no-num">⑥</span> dH2O</span> <span id="mix-b-6-vol" style="font-weight:bold;">- μL</span></div>
+      <div class="instruction-bar">👉 每管补入：<span class="instruction-highlight" id="instr-b-mix">-</span> μL Mix B</div>
     </div>
-    
-    <div class="hint" id="result-summary" style="margin-top: 10px; color: #34c759; font-weight: 600;"></div>
+
+    <div id="single-step2" class="mode-content">
+      <div class="hint">直接往原管补入：</div>
+      <div class="mix-item"><span><span class="no-num">③</span> RT Enzyme</span> <span id="s-b-3-vol" class="instruction-highlight">-</span></div>
+      <div class="mix-item"><span><span class="no-num">④</span> 5X Buffer 2</span> <span id="s-b-4-vol" class="instruction-highlight">-</span></div>
+      <div class="mix-item"><span><span class="no-num">⑤</span> Primer Mix</span> <span id="s-b-5-vol" class="instruction-highlight">-</span></div>
+      <div class="mix-item"><span><span class="no-num">⑥</span> dH2O</span> <span id="s-b-6-vol" class="instruction-highlight">-</span></div>
+    </div>
   </div>
 
   <div class="easter-egg">@louie</div>
 
   <script>
+    let currentMode = 'premix';
+
     document.addEventListener('DOMContentLoaded', () => {
       initRows(3);
       calculateAll();
     });
 
-    function initRows(count) {
-      const tbody = document.getElementById('table-body');
-      tbody.innerHTML = '';
-      for(let i=1; i<=count; i++) createRow(i);
+    function switchMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.mode-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll(`#${mode}-step1, #${mode}-step2`).forEach(el => el.classList.add('active'));
+      calculateAll();
     }
 
-    function createRow(index) {
-      const tbody = document.getElementById('table-body');
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><input type="text" placeholder="S${index}" style="padding:4px; font-size:11px; width:40px; border:none; background:transparent;"></td>
-        <td><input type="number" class="conc-input" oninput="calculateAll()" inputmode="numeric" style="padding:6px; font-size:13px;"></td>
-        <td class="col-rna">-</td>
-        <td class="col-water">-</td>
-      `;
-      tbody.appendChild(tr);
+    function initRows(c) {
+      const b = document.getElementById('table-body');
+      b.innerHTML = '';
+      for(let i=1; i<=c; i++) createRow(i);
+    }
+
+    function createRow(i) {
+      const b = document.getElementById('table-body');
+      const r = document.createElement('tr');
+      r.innerHTML = `<td>S${i}</td><td><input type="number" class="conc-input" oninput="calculateAll()" style="width:70px;"></td><td style="font-weight:bold;color:#007aff;">-</td><td style="font-weight:bold;color:#34c759;">-</td>`;
+      b.appendChild(r);
     }
 
     function addRow() { createRow(document.getElementById('table-body').rows.length + 1); }
@@ -151,59 +146,47 @@
     function calculateAll() {
       const m = parseInt(document.getElementById('m-count').value) || 0;
       const n = parseFloat(document.getElementById('n-scale').value) || 1;
-      const baseMass = parseFloat(document.getElementById('target-mass').value) || 0;
-      const redundant = m + 1;
+      const base = parseFloat(document.getElementById('target-mass').value) || 0;
+      const redun = m + 1;
 
-      // 自动缩放的目标总量
-      const actualTotalMass = baseMass * n;
-      document.getElementById('actual-total-mass').innerText = actualTotalMass.toFixed(0);
+      document.getElementById('total-rna-text').innerText = (base * n).toFixed(0);
 
-      document.getElementById('instr-a').innerText = (3.0 * n).toFixed(1);
-      document.getElementById('instr-b').innerText = (10.0 * n).toFixed(1);
+      // --- 第一步逻辑 ---
+      if(currentMode === 'premix') {
+        document.getElementById('mix-a-1-vol').innerText = (1.0 * n * redun).toFixed(1) + " μL";
+        document.getElementById('mix-a-2-vol').innerText = (2.0 * n * redun).toFixed(1) + " μL";
+        document.getElementById('instr-a-mix').innerText = (3.0 * n).toFixed(1);
+      } else {
+        document.getElementById('s-a-1-vol').innerText = (1.0 * n).toFixed(1) + " μL";
+        document.getElementById('s-a-2-vol').innerText = (2.0 * n).toFixed(1) + " μL";
+      }
 
-      // Mix A 逻辑 (调换版)
-      document.getElementById('mix-a-1').innerText = (1.0 * n * redundant).toFixed(1) + " μL";
-      document.getElementById('mix-a-2').innerText = (2.0 * n * redundant).toFixed(1) + " μL";
-
+      // --- 样本表逻辑 ---
       const rows = document.getElementById('table-body').rows;
-      const v1_total = 10 * n;
-      const v_mix_a = 3 * n;
-      for (let row of rows) {
-        const conc = parseFloat(row.querySelector('.conc-input').value);
-        const rnaCell = row.cells[2];
-        const waterCell = row.cells[3];
+      for (let r of rows) {
+        const conc = parseFloat(r.querySelector('.conc-input').value);
         if (conc > 0) {
-          // 核心更正：RNA 体积随 n 缩放
-          const rnaVol = (baseMass * n) / conc;
-          const waterVol = v1_total - v_mix_a - rnaVol;
-          
-          rnaCell.innerText = rnaVol.toFixed(2);
-          waterCell.innerText = waterVol < 0 ? "超载" : waterVol.toFixed(2);
-          
-          if (waterVol < 0) row.classList.add('row-error');
-          else row.classList.remove('row-error');
-        } else {
-          rnaCell.innerText = "-"; waterCell.innerText = "-"; row.classList.remove('row-error');
+          const rv = (base * n) / conc;
+          const wv = 10 * n - 3 * n - rv;
+          r.cells[2].innerText = rv.toFixed(2);
+          r.cells[3].innerText = wv < 0 ? "超载" : wv.toFixed(2);
+          r.className = wv < 0 ? "row-error" : "";
         }
       }
 
-      // Mix B 逻辑 (调换版)
-      if (m > 0) {
-        document.getElementById('mix-b-3').innerText = (1.0 * n * redundant).toFixed(1) + " μL";
-        document.getElementById('mix-b-4').innerText = (4.0 * n * redundant).toFixed(1) + " μL";
-        document.getElementById('mix-b-5').innerText = (1.0 * n * redundant).toFixed(1) + " μL";
-        document.getElementById('mix-b-6').innerText = (4.0 * n * redundant).toFixed(1) + " μL";
-        
-        const finalConc = baseMass / 20; // 维持 1倍体系时的浓度
-        document.getElementById('result-summary').innerText = `✓ 最终产物: ${20*n}μL cDNA (浓度计: ${finalConc.toFixed(1)} ng/μL 相当量)。`;
+      // --- 第二步逻辑 ---
+      if(currentMode === 'premix') {
+        document.getElementById('mix-b-3-vol').innerText = (1.0 * n * redun).toFixed(1) + " μL";
+        document.getElementById('mix-b-4-vol').innerText = (4.0 * n * redun).toFixed(1) + " μL";
+        document.getElementById('mix-b-5-vol').innerText = (1.0 * n * redun).toFixed(1) + " μL";
+        document.getElementById('mix-b-6-vol').innerText = (4.0 * n * redun).toFixed(1) + " μL";
+        document.getElementById('instr-b-mix').innerText = (10.0 * n).toFixed(1);
+      } else {
+        document.getElementById('s-b-3-vol').innerText = (1.0 * n).toFixed(1) + " μL";
+        document.getElementById('s-b-4-vol').innerText = (4.0 * n).toFixed(1) + " μL";
+        document.getElementById('s-b-5-vol').innerText = (1.0 * n).toFixed(1) + " μL";
+        document.getElementById('s-b-6-vol').innerText = (4.0 * n).toFixed(1) + " μL";
       }
-    }
-
-    function resetData() {
-      document.getElementById('m-count').value = 3;
-      document.getElementById('n-scale').value = 2;
-      initRows(3);
-      calculateAll();
     }
   </script>
 </body>
